@@ -36,3 +36,81 @@
     transform: rotate(360deg);
   }
 }
+
+.loader {
+  border: solid transparent 10px;
+  border-top: solid gray 10px;
+  border-radius: 100%;
+  width: 50px;
+  height: 50px;
+  animation: loader infinite 1s linear;
+}
+
+@keyframes loader {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.card-holder {
+  display: grid;
+  grid-template: 1fr / 1fr 1fr 1fr 1fr;
+  gap: 5px;
+}
+
+.card {
+  border: solid gray 5px;
+  cursor: pointer;
+}
+
+.card:hover {
+  background-color: lightgray;
+}
+
+.card-img {
+  width: 20vw;
+}
+
+#close {
+  overflow: hidden;
+  position: relative;
+  border: none;
+  padding: 0;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background: transparent;
+  color: #1da1f2;
+  font: inherit;
+  text-indent: 100%;
+  cursor: pointer;
+}
+
+#close:focus {
+  outline: solid 0 transparent;
+  box-shadow: 0 0 0 2px #8ed0f9;
+}
+
+#close:hover {
+  background: rgba(29, 161, 142, 0.1);
+}
+
+#close:before,
+#close:after {
+  position: absolute;
+  top: 15%;
+  left: calc(50% - 0.0625em);
+  width: 0.125em;
+  height: 70%;
+  border-radius: 0.125em;
+  transform: rotate(45deg);
+  background: currentcolor;
+  content: "";
+}
+
+#close:after {
+  transform: rotate(-45deg);
+}

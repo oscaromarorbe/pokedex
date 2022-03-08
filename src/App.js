@@ -1,11 +1,14 @@
-import logo from './logo.svg';
-import './App.css';
+import logo from "./logo.svg";
+import "./App.css";
+import Modal from "./components/Modal";
+import { pokemonClefairy } from "./responses";
+import List from "./components/List";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+      {/* <header className="App-header"></header> */}
+      {/* <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
@@ -17,7 +20,9 @@ function App() {
         >
           Learn React
         </a>
-      </header>
+        <div className="loader"></div> */}
+      <List />
+      <Modal pokemon={pokemonClefairy} />
     </div>
   );
 }
