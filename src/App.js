@@ -1,28 +1,26 @@
-import logo from "./logo.svg";
 import "./App.css";
 import Modal from "./components/Modal";
-import { pokemonClefairy } from "./responses";
 import List from "./components/List";
+import { useSelector } from "react-redux";
+import { selectSelectedPokemon } from "./store/pokemonSlice";
+import Header from "./components/Header";
+import Filter from "./components/Filter";
+import Sort from "./components/Sort";
 
 function App() {
+  const selectedPokemon = useSelector(selectSelectedPokemon);
   return (
     <div className="App">
-      {/* <header className="App-header"></header> */}
-      {/* <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <div className="loader"></div> */}
+      <Header />
+      <Filter />
       <List />
-      <Modal pokemon={pokemonClefairy} />
+      <Sort />
+      {/* <div className="dark-symbol">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div> */}
+      <Modal active={selectedPokemon} />
     </div>
   );
 }
