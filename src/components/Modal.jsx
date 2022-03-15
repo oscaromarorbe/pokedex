@@ -27,15 +27,14 @@ const Modal = (props) => {
             <ul>
               {selectedPokemon.types.map((type) => {
                 return (
-                  <li key={type.slot}>
-                    {type.type.name.charAt(0).toUpperCase() +
-                      type.type.name.slice(1)}
+                  <li key={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
                   </li>
                 );
               })}
             </ul>
-            <h5>Height</h5>
-            <span>{selectedPokemon.height} ft</span>
+            {/* <span>{"Height: " + selectedPokemon.height + " ft"}</span> */}
+            {/* <span>{selectedPokemon.height} ft</span> */}
             <h5>Weight</h5>
             <span>{selectedPokemon.weight} lb</span>
           </div>
@@ -44,9 +43,7 @@ const Modal = (props) => {
               selectedPokemon.name.charAt(0).toUpperCase() +
               selectedPokemon.name.slice(1)
             }
-            src={
-              selectedPokemon.sprites.other["official-artwork"].front_default
-            }
+            src={selectedPokemon.image}
           />
           <div>
             {selectedPokemon.abilities ? (
@@ -55,9 +52,8 @@ const Modal = (props) => {
                 <ul>
                   {selectedPokemon.abilities.map((ability) => {
                     return (
-                      <li key={ability.slot}>
-                        {ability.ability.name.charAt(0).toUpperCase() +
-                          ability.ability.name.slice(1)}
+                      <li key={ability}>
+                        {ability.charAt(0).toUpperCase() + ability.slice(1)}
                       </li>
                     );
                   })}
@@ -72,9 +68,8 @@ const Modal = (props) => {
                 <ul>
                   {selectedPokemon.stats.map((stat) => {
                     return (
-                      <li key={stat.stat.name}>
-                        {stat.stat.name.charAt(0).toUpperCase() +
-                          stat.stat.name.slice(1)}
+                      <li key={stat.name}>
+                        {stat.name.charAt(0).toUpperCase() + stat.name.slice(1)}
                         : {stat.base_stat}
                       </li>
                     );

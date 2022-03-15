@@ -1,12 +1,17 @@
 import React, { useEffect } from "react";
 import { useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { loadPokemonList, selectPokemonList } from "../store/pokemonSlice";
+import {
+  loadPokemonList,
+  selectFilteredPokemonList,
+  selectPokemonList,
+} from "../store/pokemonSlice";
 import Card from "./Card";
 
 const List = () => {
   const dispatch = useDispatch();
   const pokemonList = useSelector(selectPokemonList) ?? false;
+  const filteredPokemonList = useSelector(selectFilteredPokemonList) ?? false;
   const fetchPokemon = useCallback(() => {
     dispatch(
       loadPokemonList({
@@ -26,8 +31,8 @@ const List = () => {
   return (
     <div className="list">
       <ul className="card-holder">
-        {Object.values(pokemonList).length > 0 ? (
-          Object.values(pokemonList).map((pokemon) => {
+        {Object.values(filteredPokemonList).length > 0 ? (
+          Object.values(filteredPokemonList).map((pokemon) => {
             return <Card key={pokemon.name} pokemon={pokemon} />;
           })
         ) : (
@@ -41,6 +46,16 @@ const List = () => {
       >
         Load more
       </button>
+      {/* <div className="bug-symbol">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div> */}
     </div>
   );
 };

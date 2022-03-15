@@ -10,19 +10,16 @@ const Card = (props) => {
     [dispatch, props.pokemon.name]
   );
   const handleSelectPokemon = () => {
-    dispatch(setSelectedPokemon(props.pokemon.name));
+    if (!props.pokemon.isLoading)
+      dispatch(setSelectedPokemon(props.pokemon.name));
   };
   return (
     <div onClick={handleSelectPokemon} className="card">
       <h3>{props.pokemon.name.toUpperCase()}</h3>
-      {props.pokemon.sprites ? (
+      {props.pokemon.image ? (
         <img
           alt={props.pokemon.name}
-          src={
-            props.pokemon.sprites
-              ? props.pokemon.sprites.other["official-artwork"].front_default
-              : ""
-          }
+          src={props.pokemon.image ? props.pokemon.image : ""}
           className="card-img"
         />
       ) : (

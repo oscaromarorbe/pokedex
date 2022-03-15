@@ -7,24 +7,12 @@ const initialState = {
   typesList: {},
   typesListLoading: false,
   typesListFailed: false,
-  typesFiltered: [],
 };
 
 export const typesSlice = createSlice({
   name: "type",
   initialState,
-  reducers: {
-    setTypesFiltered: (state, action) => {
-      state.typesFiltered.push(action.payload);
-    },
-    removeTypesFiltered: (state, action) => {
-      if (!state.typesFiltered.includes(action.payload))
-        state.typesFiltered.filter((type) => type !== action.payload);
-    },
-    clearTypesFiltered: (state, action) => {
-      state.typesFiltered = [];
-    },
-  },
+  reducers: {},
   extraReducers: {
     [loadTypesList.pending]: (state, action) => {
       state.typesListLoading = true;
@@ -42,15 +30,12 @@ export const typesSlice = createSlice({
           name: type.name,
           isLoading: false,
           failed: false,
-          srcImage: "/resources/types-symbols/" + type.name + ".png",
+          srcImage: "/resources/types-symbols/" + type.name + ".svg",
         };
       });
     },
   },
 });
-
-export const { setTypesFiltered, removeTypesFiltered, clearTypesFiltered } =
-  typesSlice.actions;
 
 export const selectTypesList = (state) => state.type.typesList;
 
