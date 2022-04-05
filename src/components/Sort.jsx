@@ -3,7 +3,9 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   loadStatsList,
+  removeStatsSorted,
   selectStatsList,
+  selectStatsListLoading,
   selectStatsSorted,
   setStatsSorted,
 } from "../store/statsSlice";
@@ -12,29 +14,48 @@ const Sort = () => {
   const dispatch = useDispatch();
   const statsList = useSelector(selectStatsList);
   const statsSorted = useSelector(selectStatsSorted);
+  const statsListLoading = useSelector(selectStatsListLoading);
   useEffect(() => {
-    dispatch(loadStatsList({ id: false, params: { limit: 6, offset: 0 } }));
+    dispatch(
+      loadStatsList({
+        id: false,
+        endpoint: "stat",
+        params: { limit: 6, offset: 0 },
+      })
+    );
   }, [dispatch]);
   const handleClick = (name) => {
     dispatch(
-      setStatsSorted([
-        name,
-        !statsSorted[name]
-          ? "ASC"
-          : statsSorted[name] === "ASC"
-          ? "DSC"
-          : false,
-      ])
+      statsSorted[name] === "DSC"
+        ? removeStatsSorted(name)
+        : setStatsSorted([name, !statsSorted[name] ? "ASC" : "DSC"])
     );
   };
   return (
     <div className="sort">
-      {Object.values(statsList).length > 0 ? (
+      {!statsListLoading ? (
         Object.values(statsList).map((stat) => {
           return (
-            <button key={stat.name} onClick={() => handleClick(stat.name)}>
-              {stat.name.split("-").join("\n") + " ↑ ↓"}
-            </button>
+            <div
+              className={"stat-" + stat.name + " sort-stat"}
+              id={
+                statsSorted[stat.name] === "ASC" ||
+                statsSorted[stat.name] === "DSC"
+                  ? "sort-stat-active"
+                  : ""
+              }
+              key={stat.name}
+              onClick={() => handleClick(stat.name)}
+            >
+              <span className="stat-name">{stat.name.toUpperCase()}</span>
+              <br />
+              <span id={statsSorted[stat.name] === "ASC" ? "bold" : ""}>
+                ASC
+              </span>{" "}
+              <span id={statsSorted[stat.name] === "DSC" ? "bold" : ""}>
+                DESC
+              </span>
+            </div>
           );
         })
       ) : (

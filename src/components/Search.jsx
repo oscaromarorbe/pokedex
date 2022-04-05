@@ -9,12 +9,13 @@ const Search = () => {
     dispatch(setSearchTerm(value));
   };
   return (
-    <div>
+    <div className="search-holder">
       <input
         onChange={({ target }) => handleChange(target)}
         value={searchTerm}
         className="search"
         type="search"
+        placeholder="Search..."
       />
     </div>
   );

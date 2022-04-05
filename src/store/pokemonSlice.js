@@ -1,14 +1,24 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { fetchPokemon } from "../api/pokeapi";
+import { fetchAPI } from "../api/pokeapi";
 
 export const loadPokemonList = createAsyncThunk(
   "pokemon/loadPokemonList",
-  fetchPokemon
+  fetchAPI
 );
 
 export const loadSinglePokemon = createAsyncThunk(
   "pokemon/loadSinglePokemon",
-  fetchPokemon
+  fetchAPI
+);
+
+export const loadSingleGeneration = createAsyncThunk(
+  "pokemon/loadSingleGeneration",
+  fetchAPI
+);
+
+export const loadSingleType = createAsyncThunk(
+  "pokemon/loadSingleType",
+  fetchAPI
 );
 
 const initialState = {
@@ -19,6 +29,7 @@ const initialState = {
   searchTerm: "",
   selectedPokemon: "",
   typesFiltered: [],
+  sortedBy: [],
 };
 
 export const pokemonSlice = createSlice({
@@ -27,6 +38,28 @@ export const pokemonSlice = createSlice({
   reducers: {
     setSearchTerm: (state, action) => {
       state.searchTerm = action.payload;
+      state.filteredPokemonList = Object.assign({}, state.pokemonList);
+      Object.values(state.pokemonList).forEach((pokemon) => {
+        if (
+          !pokemon.types.some(
+            (type) => state.typesFiltered.indexOf(type) > -1
+          ) &&
+          state.typesFiltered.length > 0
+        ) {
+          state.filteredPokemonList[pokemon.name].display = false;
+        } else {
+          state.filteredPokemonList[pokemon.name].display = true;
+        }
+      });
+      Object.values(state.filteredPokemonList).forEach((pokemon) => {
+        if (
+          !pokemon.name.includes(action.payload) &&
+          action.payload &&
+          state.filteredPokemonList[pokemon.name].display !== false
+        ) {
+          state.filteredPokemonList[pokemon.name].display = false;
+        }
+      });
     },
     clearSearchTerm: (state, action) => {
       state.searchTerm = "";
@@ -41,10 +74,20 @@ export const pokemonSlice = createSlice({
       state.typesFiltered.push(action.payload);
       state.filteredPokemonList = Object.assign({}, state.pokemonList);
       Object.values(state.pokemonList).forEach((pokemon) => {
+        if (!pokemon.name.includes(state.searchTerm) && state.searchTerm) {
+          state.filteredPokemonList[pokemon.name].display = false;
+        } else {
+          state.filteredPokemonList[pokemon.name].display = true;
+        }
+      });
+      Object.values(state.filteredPokemonList).forEach((pokemon) => {
         if (
-          !pokemon.types.some((type) => state.typesFiltered.indexOf(type) > -1)
+          !pokemon.types.some(
+            (type) => state.typesFiltered.indexOf(type) > -1
+          ) &&
+          state.filteredPokemonList[pokemon.name].display !== false
         ) {
-          delete state.filteredPokemonList[pokemon.name];
+          state.filteredPokemonList[pokemon.name].display = false;
         }
       });
     },
@@ -53,42 +96,34 @@ export const pokemonSlice = createSlice({
         (type) => type !== action.payload
       );
       state.filteredPokemonList = Object.assign({}, state.pokemonList);
-      if (state.typesFiltered.length > 0) {
-        Object.values(state.pokemonList).forEach((pokemon) => {
-          if (
-            !pokemon.types.some(
-              (type) => state.typesFiltered.indexOf(type) > -1
-            )
-          ) {
-            delete state.filteredPokemonList[pokemon.name];
-          }
-        });
-      }
+      Object.values(state.pokemonList).forEach((pokemon) => {
+        if (!pokemon.name.includes(state.searchTerm) && state.searchTerm) {
+          state.filteredPokemonList[pokemon.name].display = false;
+        } else {
+          state.filteredPokemonList[pokemon.name].display = true;
+        }
+      });
+      Object.values(state.filteredPokemonList).forEach((pokemon) => {
+        if (
+          !pokemon.types.some(
+            (type) => state.typesFiltered.indexOf(type) > -1
+          ) &&
+          state.typesFiltered.length > 0 &&
+          state.filteredPokemonList[pokemon.name].display !== false
+        ) {
+          state.filteredPokemonList[pokemon.name].display = false;
+        }
+      });
     },
     clearTypesFiltered: (state, action) => {
       state.typesFiltered = [];
       state.filteredPokemonList = Object.assign({}, state.pokemonList);
+      Object.values(state.filteredPokemonList).forEach((pokemon) => {
+        state.filteredPokemonList[pokemon.name].display = true;
+      });
     },
-    filterPokemonListByType: (state, action) => {
-      if (action.payload.length === 0) {
-        state.filteredPokemonList = state.pokemonList;
-      } else {
-        /* const filteredPokemonList = {};
-        const pokemonList = Object.values(state.pokemonList).filter((pokemon) =>
-          action.payload.some((type) => pokemon.types.indexOf(type) > -1)
-        ); */
-        Object.values(state.pokemonList).forEach((pokemon) => {
-          if (
-            !pokemon.types.some((type) => action.payload.indexOf(type) > -1)
-          ) {
-            delete state.filteredPokemonList[pokemon.name];
-          }
-        });
-        /* pokemonList.forEach((pokemon) => {
-          filteredPokemonList[pokemon.name] = pokemon;
-        });
-        state.filteredPokemonList = filteredPokemonList; */
-      }
+    setSortedBy: (state, action) => {
+      state.sortedBy[action.payload.stat] = action.payload.order;
     },
   },
   extraReducers: {
@@ -106,7 +141,7 @@ export const pokemonSlice = createSlice({
       action.payload.results.forEach((pokemon) => {
         const pokemonObj = {
           name: pokemon.name,
-          isLoading: true,
+          loading: true,
           failed: false,
         };
         state.pokemonList[pokemon.name] = pokemonObj;
@@ -114,23 +149,23 @@ export const pokemonSlice = createSlice({
       });
     },
     [loadSinglePokemon.pending]: (state, action) => {
-      state.pokemonList[action.meta.arg.id].isLoading = true;
+      state.pokemonList[action.meta.arg.id].loading = true;
       state.pokemonList[action.meta.arg.id].failed = false;
     },
     [loadSinglePokemon.rejected]: (state, action) => {
-      state.pokemonList[action.meta.arg.id].isLoading = false;
+      state.pokemonList[action.meta.arg.id].loading = false;
       state.pokemonList[action.meta.arg.id].failed = true;
     },
     [loadSinglePokemon.fulfilled]: (state, action) => {
-      state.pokemonList[action.meta.arg.id].isLoading = false;
+      state.pokemonList[action.meta.arg.id].loading = false;
       state.pokemonList[action.meta.arg.id].failed = false;
       const { abilities, height, id, name, sprites, stats, types, weight } =
         action.payload;
       const abilitiesArray = abilities.map((ability) => ability.ability.name);
-      const statsArray = stats.map((stat) => ({
-        name: stat.stat.name,
-        base_stat: stat.base_stat,
-      }));
+      const statsObject = {};
+      stats.forEach((stat) => {
+        statsObject[stat.stat.name] = stat.base_stat;
+      });
       const typesArray = types.map((type) => type.type.name);
       const image = sprites.other["official-artwork"].front_default;
       const pokemon = {
@@ -139,14 +174,65 @@ export const pokemonSlice = createSlice({
         id,
         name,
         image,
-        stats: statsArray,
+        stats: statsObject,
         types: typesArray,
+        weaknesses: [],
+        resistances: [],
+        immunities: [],
         weight,
-        isLoading: false,
+        loading: false,
         failed: false,
+        display: true,
       };
       state.pokemonList[name] = pokemon;
       state.filteredPokemonList[name] = pokemon;
+    },
+    [loadSingleGeneration.pending]: (state, action) => {
+      state.pokemonList[action.meta.arg.pokemon].loading = true;
+      state.pokemonList[action.meta.arg.pokemon].failed = false;
+    },
+    [loadSingleGeneration.rejected]: (state, action) => {
+      state.pokemonList[action.meta.arg.pokemon].loading = false;
+      state.pokemonList[action.meta.arg.pokemon].failed = true;
+    },
+    [loadSingleGeneration.fulfilled]: (state, action) => {
+      state.pokemonList[action.meta.arg.pokemon].loading = false;
+      state.pokemonList[action.meta.arg.pokemon].failed = false;
+      action.payload.pokemon_species.forEach((species) => {
+        if (
+          Object.values(state.pokemonList).some(
+            (pokemon) => species.name === pokemon.name
+          )
+        )
+          state.pokemonList[species.name].generation = action.payload.name;
+      });
+    },
+    [loadSingleType.pending]: (state, action) => {
+      state.pokemonList[action.meta.arg.pokemon].loading = true;
+      state.pokemonList[action.meta.arg.pokemon].failed = false;
+    },
+    [loadSingleType.rejected]: (state, action) => {
+      state.pokemonList[action.meta.arg.pokemon].loading = false;
+      state.pokemonList[action.meta.arg.pokemon].failed = true;
+    },
+    [loadSingleType.fulfilled]: (state, action) => {
+      state.pokemonList[action.meta.arg.pokemon].loading = false;
+      state.pokemonList[action.meta.arg.pokemon].failed = false;
+      state.pokemonList[action.meta.arg.pokemon].weaknesses.push(
+        action.payload.damage_relations.double_damage_from.map(
+          (relation) => relation.name
+        )
+      );
+      state.pokemonList[action.meta.arg.pokemon].resistances.push(
+        action.payload.damage_relations.half_damage_from.map(
+          (relation) => relation.name
+        )
+      );
+      state.pokemonList[action.meta.arg.pokemon].immunities.push(
+        action.payload.damage_relations.no_damage_from.map(
+          (relation) => relation.name
+        )
+      );
     },
   },
 });
@@ -165,11 +251,13 @@ export const {
 export const selectPokemonList = (state) => state.pokemon.pokemonList;
 export const selectFilteredPokemonList = (state) =>
   state.pokemon.filteredPokemonList;
-export const selectIsPokemonListLoading = (state) =>
+export const selectPokemonListLoading = (state) =>
   state.pokemon.pokemonListLoading;
 export const selectSearchTerm = (state) => state.pokemon.searchTerm;
 export const selectSelectedPokemon = (state) =>
   state.pokemon.pokemonList[state.pokemon.selectedPokemon];
+export const selectSelectedPokemonName = (state) =>
+  state.pokemon.selectedPokemon;
 export const selectTypesFiltered = (state) => state.pokemon.typesFiltered;
 
 export default pokemonSlice.reducer;

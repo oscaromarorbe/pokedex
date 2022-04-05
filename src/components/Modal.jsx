@@ -1,14 +1,33 @@
 import React from "react";
+import { useEffect } from "react";
 import reactDom from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   clearSelectedPokemon,
   selectSelectedPokemon,
+  selectSelectedPokemonName,
 } from "../store/pokemonSlice";
+import { /* loadSingleType, */ selectTypesList } from "../store/typesSlice";
+import { loadSingleType } from "../store/pokemonSlice";
+/* import WeakResist from "./WeakResist"; */
 
 const Modal = (props) => {
   const dispatch = useDispatch();
   const selectedPokemon = useSelector(selectSelectedPokemon);
+  const selectedPokemonName = useSelector(selectSelectedPokemonName);
+  const typesList = useSelector(selectTypesList);
+  useEffect(() => {
+    if (selectedPokemonName)
+      selectedPokemon.types.forEach((type) =>
+        dispatch(
+          loadSingleType({
+            id: type,
+            endpoint: "type",
+            pokemon: selectedPokemonName,
+          })
+        )
+      );
+  }, [dispatch, selectedPokemonName, selectedPokemon?.types]);
   const handleClose = () => {
     dispatch(clearSelectedPokemon());
   };
@@ -23,20 +42,42 @@ const Modal = (props) => {
         </div>
         <div className="modal-grid">
           <div>
+            <h5>
+              Height
+              <br />
+              {selectedPokemon.height * 10} cm
+            </h5>
+            <h5>
+              Weight
+              <br />
+              {selectedPokemon.weight / 10} kg
+            </h5>
+            <h5>
+              Generation
+              <br />
+              {selectedPokemon?.generation?.slice(11).toUpperCase() ?? (
+                <div className="loader"></div>
+              )}
+            </h5>
+          </div>
+          <div>
             <h5>Types</h5>
-            <ul>
-              {selectedPokemon.types.map((type) => {
+            <div className="types-holder">
+              {selectedPokemon?.types?.map((typeName) => {
                 return (
-                  <li key={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </li>
+                  <div className="types-list" key={typeName}>
+                    <img
+                      alt={typeName + " type"}
+                      src={typesList[typeName].srcImage}
+                      className={"type-" + typeName}
+                    />
+                    <span>
+                      {typeName.charAt(0).toUpperCase() + typeName.slice(1)}
+                    </span>
+                  </div>
                 );
-              })}
-            </ul>
-            {/* <span>{"Height: " + selectedPokemon.height + " ft"}</span> */}
-            {/* <span>{selectedPokemon.height} ft</span> */}
-            <h5>Weight</h5>
-            <span>{selectedPokemon.weight} lb</span>
+              }) ?? <div className="loader"></div>}
+            </div>
           </div>
           <img
             alt={
@@ -44,41 +85,137 @@ const Modal = (props) => {
               selectedPokemon.name.slice(1)
             }
             src={selectedPokemon.image}
+            id="pokemon-image"
           />
           <div>
-            {selectedPokemon.abilities ? (
-              <>
-                <h5>Abilities</h5>
-                <ul>
-                  {selectedPokemon.abilities.map((ability) => {
-                    return (
-                      <li key={ability}>
-                        {ability.charAt(0).toUpperCase() + ability.slice(1)}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </>
-            ) : (
-              ""
-            )}
-            {selectedPokemon.stats ? (
-              <>
-                <h5>Stats</h5>
-                <ul>
-                  {selectedPokemon.stats.map((stat) => {
-                    return (
-                      <li key={stat.name}>
-                        {stat.name.charAt(0).toUpperCase() + stat.name.slice(1)}
-                        : {stat.base_stat}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </>
-            ) : (
-              ""
-            )}
+            <>
+              <h5>Abilities</h5>
+              {selectedPokemon?.abilities?.map((ability) => {
+                return (
+                  <div key={ability}>
+                    <span className="ability">
+                      {ability
+                        .split("-")
+                        .map(
+                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                        )
+                        .join(" ")}
+                    </span>
+                  </div>
+                );
+              }) ?? <div className="loader"></div>}
+            </>
+          </div>
+          <div>
+            <>
+              <h5>Stats</h5>
+              {Object.entries(selectedPokemon?.stats).map(
+                ([statName, statValue]) => {
+                  return (
+                    <div className="stat-holder" key={statName}>
+                      <span className={"stat-" + statName}>
+                        {statName.toUpperCase().split("-").join(" ") +
+                          ": " +
+                          statValue}
+                      </span>
+                    </div>
+                  );
+                }
+              ) ?? <div className="loader"></div>}
+            </>
+          </div>
+        </div>
+        <div className="modal-foot">
+          <div>
+            <h5>Weaknesses</h5>
+            <div className="weak-resist">
+              {typesList[selectedPokemon?.types[0]].weaknesses
+                .concat(typesList[selectedPokemon?.types[1] ?? -1]?.weaknesses)
+                .filter(
+                  (weakness) =>
+                    !selectedPokemon.types
+                      .concat(
+                        typesList[selectedPokemon.types[0]].resistances,
+                        typesList[selectedPokemon.types[1]]?.resistances,
+                        typesList[selectedPokemon.types[0]].immunities,
+                        typesList[selectedPokemon.types[1]]?.immunities
+                      )
+                      .includes(weakness)
+                )
+                .filter(
+                  (weakness, index, selfArray) =>
+                    selfArray.indexOf(weakness) === index
+                )
+                .map(
+                  (weakness) =>
+                    weakness && (
+                      <div className="types-list" key={weakness}>
+                        <img
+                          alt={weakness + " type"}
+                          src={typesList[weakness].srcImage}
+                          className={"type-" + weakness}
+                        />
+                        <span>
+                          {weakness.charAt(0).toUpperCase() + weakness.slice(1)}
+                        </span>
+                      </div>
+                    )
+                ) ?? <div className="loader"></div>}
+            </div>
+          </div>
+          <div>
+            <h5>Resistances</h5>
+            <div className="weak-resist">
+              {typesList[selectedPokemon?.types[0]].resistances
+                .concat(typesList[selectedPokemon?.types[1] ?? -1]?.resistances)
+                .filter(
+                  (resistance) =>
+                    !typesList[selectedPokemon.types[0]].weaknesses
+                      .concat(
+                        typesList[selectedPokemon.types[1]]?.weaknesses,
+                        typesList[selectedPokemon.types[0]].immunities,
+                        typesList[selectedPokemon.types[1]]?.immunities
+                      )
+                      .includes(resistance)
+                )
+                .filter(
+                  (resistance, index, selfArray) =>
+                    selfArray.indexOf(resistance) === index
+                )
+                .map(
+                  (resistance) =>
+                    resistance && (
+                      <div className="types-list" key={resistance}>
+                        <img
+                          alt={resistance + " type"}
+                          src={typesList[resistance].srcImage}
+                          className={"type-" + resistance}
+                        />
+                        <span>
+                          {resistance.charAt(0).toUpperCase() +
+                            resistance.slice(1)}
+                        </span>
+                      </div>
+                    )
+                ) ?? <div className="loader"></div>}
+            </div>
+          </div>
+          <div>
+            <h5>Immunities</h5>
+            <div className="weak-resist">
+              {selectedPokemon?.types?.map((type) =>
+                typesList[type]?.immunities.map((immunity) => (
+                  <div className="types-list" key={immunity}>
+                    <img
+                      alt={immunity + " type"}
+                      src={typesList[immunity]?.srcImage}
+                      className={"type-" + immunity}
+                    />
+                    <span>{immunity}</span>
+                  </div>
+                ))
+              ) ?? <div className="loader"></div>}
+            </div>
           </div>
         </div>
       </div>

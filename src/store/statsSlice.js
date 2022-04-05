@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchStat } from "../api/pokeapi";
+import { fetchAPI } from "../api/pokeapi";
 
-export const loadStatsList = createAsyncThunk("stat/loadStatsList", fetchStat);
+export const loadStatsList = createAsyncThunk("stat/loadStatsList", fetchAPI);
 
 const initialState = {
   statsList: {},
@@ -15,10 +15,11 @@ export const statsSlice = createSlice({
   initialState,
   reducers: {
     setStatsSorted: (state, action) => {
+      state.statsSorted = {};
       state.statsSorted[action.payload[0]] = action.payload[1];
     },
     removeStatsSorted: (state, action) => {
-      state.statsSorted[action.payload[0]] = action.payload[1];
+      delete state.statsSorted[action.payload];
     },
     clearStatsSorted: (state, action) => {
       state.statsSorted = {};
@@ -52,5 +53,6 @@ export const { setStatsSorted, removeStatsSorted, clearStatsSorted } =
 
 export const selectStatsList = (state) => state.stat.statsList;
 export const selectStatsSorted = (state) => state.stat.statsSorted;
+export const selectStatsListLoading = (state) => state.stat.statsListLoading;
 
 export default statsSlice.reducer;

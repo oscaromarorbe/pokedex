@@ -1,30 +1,75 @@
 import React from "react";
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { loadSinglePokemon, setSelectedPokemon } from "../store/pokemonSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  loadSingleGeneration,
+  loadSinglePokemon,
+  selectPokemonList,
+  /* loadSingleType, */
+  setSelectedPokemon,
+} from "../store/pokemonSlice";
+import { loadSingleType } from "../store/typesSlice";
 
 const Card = (props) => {
   const dispatch = useDispatch();
-  useEffect(
-    () => dispatch(loadSinglePokemon({ id: props.pokemon.name })),
-    [dispatch, props.pokemon.name]
-  );
+  const pokemonList = useSelector(selectPokemonList);
+  useEffect(() => {
+    dispatch(loadSinglePokemon({ id: props.pokemonName, endpoint: "pokemon" }));
+    const generations = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii"];
+    generations.forEach((generation) => {
+      dispatch(
+        loadSingleGeneration({
+          id: `generation-${generation}`,
+          endpoint: "generation",
+          pokemon: props.pokemonName,
+        })
+      );
+    });
+    const types = [
+      "bug",
+      "dark",
+      "dragon",
+      "electric",
+      "fairy",
+      "fighting",
+      "fire",
+      "flying",
+      "ghost",
+      "grass",
+      "ground",
+      "ice",
+      "normal",
+      "poison",
+      "psychic",
+      "rock",
+      "steel",
+      "water",
+    ];
+    types.forEach((type) => {
+      dispatch(loadSingleType({ id: type, endpoint: "type" }));
+    });
+  }, [dispatch, props.pokemonName]);
   const handleSelectPokemon = () => {
-    if (!props.pokemon.isLoading)
-      dispatch(setSelectedPokemon(props.pokemon.name));
+    if (!pokemonList[props.pokemonName].loading)
+      dispatch(setSelectedPokemon(props.pokemonName));
   };
   return (
-    <div onClick={handleSelectPokemon} className="card">
-      <h3>{props.pokemon.name.toUpperCase()}</h3>
-      {props.pokemon.image ? (
-        <img
-          alt={props.pokemon.name}
-          src={props.pokemon.image ? props.pokemon.image : ""}
-          className="card-img"
-        />
-      ) : (
-        <div className="loader"></div>
-      )}
+    <div
+      onClick={handleSelectPokemon}
+      className={
+        "card" +
+        (!pokemonList[props.pokemonName].display ? " display-none" : "")
+      }
+    >
+      <h3>{props.pokemonName.toUpperCase()}</h3>
+      {(pokemonList[props.pokemonName].image &&
+        !pokemonList[props.pokemonName].loading && (
+          <img
+            alt={props.pokemonName}
+            src={pokemonList[props.pokemonName].image}
+            className="card-img"
+          />
+        )) ?? <div className="loader"></div>}
     </div>
   );
 };

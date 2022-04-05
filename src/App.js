@@ -2,13 +2,13 @@ import "./App.css";
 import Modal from "./components/Modal";
 import List from "./components/List";
 import { useSelector } from "react-redux";
-import { selectSelectedPokemon } from "./store/pokemonSlice";
+import { selectSelectedPokemonName } from "./store/pokemonSlice";
 import Header from "./components/Header";
 import Filter from "./components/Filter";
 import Sort from "./components/Sort";
 
 function App() {
-  const selectedPokemon = useSelector(selectSelectedPokemon);
+  const selectedPokemon = useSelector(selectSelectedPokemonName);
   return (
     <div className="App">
       <Header />

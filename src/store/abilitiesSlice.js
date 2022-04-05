@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchAbility } from "../api/pokeapi";
+import { fetchAPI } from "../api/pokeapi";
 
 export const loadAbilitiesList = createAsyncThunk(
   "ability/loadAbilitiesList",
-  fetchAbility
+  fetchAPI
 );
 
 const initialState = {
