@@ -46,6 +46,7 @@ const Filter = () => {
                 onClick={() => handleClick(type.name)}
                 id={typesFiltered.includes(type.name) && "type-active"}
                 className={"type-" + type.name}
+                type="image/svg+xml"
               />
               <span>{type.name.toUpperCase()}</span>
             </div>
