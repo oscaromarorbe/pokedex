@@ -118,6 +118,13 @@ export const pokemonSlice = createSlice({
     clearTypesFiltered: (state, action) => {
       state.typesFiltered = [];
       state.filteredPokemonList = Object.assign({}, state.pokemonList);
+      Object.values(state.pokemonList).forEach((pokemon) => {
+        if (!pokemon.name.includes(state.searchTerm) && state.searchTerm) {
+          state.filteredPokemonList[pokemon.name].display = false;
+        } else {
+          state.filteredPokemonList[pokemon.name].display = true;
+        }
+      });
       Object.values(state.filteredPokemonList).forEach((pokemon) => {
         state.filteredPokemonList[pokemon.name].display = true;
       });
@@ -192,19 +199,22 @@ export const pokemonSlice = createSlice({
       state.pokemonList[action.meta.arg.pokemon].failed = false;
     },
     [loadSingleGeneration.rejected]: (state, action) => {
-      state.pokemonList[action.meta.arg.pokemon].loading = false;
-      state.pokemonList[action.meta.arg.pokemon].failed = true;
+      if (state.pokemonList.hasOwnProperty(action.meta.arg.pokemon)) {
+        state.pokemonList[action.meta.arg.pokemon].loading = false;
+        state.pokemonList[action.meta.arg.pokemon].failed = true;
+      }
     },
     [loadSingleGeneration.fulfilled]: (state, action) => {
-      state.pokemonList[action.meta.arg.pokemon].loading = false;
-      state.pokemonList[action.meta.arg.pokemon].failed = false;
       action.payload.pokemon_species.forEach((species) => {
         if (
-          Object.values(state.pokemonList).some(
+          /* Object.values(state.pokemonList).some(
             (pokemon) => species.name === pokemon.name
-          )
-        )
+          ) &&  */ state.pokemonList.hasOwnProperty(species.name)
+        ) {
           state.pokemonList[species.name].generation = action.payload.name;
+          state.pokemonList[species.name].loading = false;
+          state.pokemonList[species.name].failed = false;
+        }
       });
     },
     [loadSingleType.pending]: (state, action) => {

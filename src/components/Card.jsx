@@ -8,23 +8,34 @@ import {
   /* loadSingleType, */
   setSelectedPokemon,
 } from "../store/pokemonSlice";
-import { loadSingleType } from "../store/typesSlice";
+import { loadSingleType, selectTypesList } from "../store/typesSlice";
 
 const Card = (props) => {
   const dispatch = useDispatch();
   const pokemonList = useSelector(selectPokemonList);
+  const typesList = useSelector(selectTypesList);
   useEffect(() => {
-    dispatch(loadSinglePokemon({ id: props.pokemonName, endpoint: "pokemon" }));
-    const generations = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii"];
-    generations.forEach((generation) => {
+    if (!pokemonList[props.pokemonName]?.image) {
       dispatch(
-        loadSingleGeneration({
-          id: `generation-${generation}`,
-          endpoint: "generation",
-          pokemon: props.pokemonName,
-        })
+        loadSinglePokemon({ id: props.pokemonName, endpoint: "pokemon" })
       );
-    });
+    }
+  }, []);
+  useEffect(() => {
+    if (!pokemonList[props.pokemonName].generation) {
+      const generations = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii"];
+      generations.forEach((generation) => {
+        dispatch(
+          loadSingleGeneration({
+            id: `generation-${generation}`,
+            endpoint: "generation",
+            pokemon: props.pokemonName,
+          })
+        );
+      });
+    }
+  }, []);
+  useEffect(() => {
     const types = [
       "bug",
       "dark",
@@ -48,12 +59,14 @@ const Card = (props) => {
     types.forEach((type) => {
       dispatch(loadSingleType({ id: type, endpoint: "type" }));
     });
-  }, [dispatch, props.pokemonName]);
+  }, []);
   const handleSelectPokemon = () => {
     if (!pokemonList[props.pokemonName].loading)
       dispatch(setSelectedPokemon(props.pokemonName));
   };
-  return (
+  return pokemonList[props.pokemonName].loading ? (
+    <div className="loader"></div>
+  ) : (
     <div
       onClick={handleSelectPokemon}
       className={
@@ -62,14 +75,16 @@ const Card = (props) => {
       }
     >
       <h3>{props.pokemonName.toUpperCase()}</h3>
-      {(pokemonList[props.pokemonName].image &&
-        !pokemonList[props.pokemonName].loading && (
+      {
+        pokemonList[props.pokemonName].image /* &&
+        !pokemonList[props.pokemonName].loading */ && (
           <img
             alt={props.pokemonName}
             src={pokemonList[props.pokemonName].image}
             className="card-img"
           />
-        )) ?? <div className="loader"></div>}
+        ) /*  ?? <div className="loader"></div> */
+      }
     </div>
   );
 };

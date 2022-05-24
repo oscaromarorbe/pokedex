@@ -9,6 +9,11 @@ import {
 } from "../store/pokemonSlice";
 import { /* loadSingleType, */ selectTypesList } from "../store/typesSlice";
 import { loadSingleType } from "../store/pokemonSlice";
+import {
+  loadSingleAbility,
+  selectAbilitiesList,
+} from "../store/abilitiesSlice";
+import Abilities from "./Abilities";
 /* import WeakResist from "./WeakResist"; */
 
 const Modal = (props) => {
@@ -16,18 +21,40 @@ const Modal = (props) => {
   const selectedPokemon = useSelector(selectSelectedPokemon);
   const selectedPokemonName = useSelector(selectSelectedPokemonName);
   const typesList = useSelector(selectTypesList);
-  useEffect(() => {
-    if (selectedPokemonName)
-      selectedPokemon.types.forEach((type) =>
-        dispatch(
-          loadSingleType({
-            id: type,
-            endpoint: "type",
-            pokemon: selectedPokemonName,
-          })
-        )
-      );
-  }, [dispatch, selectedPokemonName, selectedPokemon?.types]);
+  const abilitiesList = useSelector(selectAbilitiesList);
+  useEffect(
+    () => {
+      if (
+        selectedPokemon?.types?.some((type) => type?.weaknesses?.length === 0)
+      ) {
+        selectedPokemon.types.forEach((type) =>
+          dispatch(
+            loadSingleType({
+              id: type,
+              endpoint: "type",
+              pokemon: selectedPokemonName,
+            })
+          )
+        );
+      }
+      if (selectedPokemonName && selectedPokemon?.abilities?.length === 0) {
+        selectedPokemon.abilities.forEach((ability) => {
+          dispatch(
+            loadSingleAbility({
+              id: ability,
+              endpoint: "ability",
+            })
+          );
+        });
+      }
+    },
+    [
+      /* dispatch,
+    selectedPokemonName,
+    selectedPokemon?.types,
+    selectedPokemon?.abilities, */
+    ]
+  );
   const handleClose = () => {
     dispatch(clearSelectedPokemon());
   };
@@ -41,25 +68,29 @@ const Modal = (props) => {
           <div id="close" onClick={handleClose}></div>
         </div>
         <div className="modal-grid">
-          <div>
-            <h5>
-              Height
-              <br />
-              {selectedPokemon.height * 10} cm
-            </h5>
-            <h5>
-              Weight
-              <br />
-              {selectedPokemon.weight / 10} kg
-            </h5>
-            <h5>
-              Generation
-              <br />
-              {selectedPokemon?.generation?.slice(11).toUpperCase() ?? (
-                <div className="loader"></div>
-              )}
-            </h5>
-          </div>
+          <Abilities />
+          {/* <div>
+            <h5>Abilities</h5>
+            {selectedPokemon?.abilities?.map((ability) => {
+              return (
+                <div key={ability}>
+                  <span
+                    className="ability"
+                    ability-effect={
+                      abilitiesList[ability]?.effect ?? "Ability description"
+                    }
+                  >
+                    {ability
+                      .split("-")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
+                      .join(" ")}
+                  </span>
+                </div>
+              );
+            }) ?? <div className="loader"></div>}
+          </div> */}
           <div>
             <h5>Types</h5>
             <div className="types-holder">
@@ -70,6 +101,7 @@ const Modal = (props) => {
                       alt={typeName + " type"}
                       src={typesList[typeName].srcImage}
                       className={"type-" + typeName}
+                      type="image/svg+xml"
                     />
                     <span>
                       {typeName.charAt(0).toUpperCase() + typeName.slice(1)}
@@ -88,23 +120,23 @@ const Modal = (props) => {
             id="pokemon-image"
           />
           <div>
-            <>
-              <h5>Abilities</h5>
-              {selectedPokemon?.abilities?.map((ability) => {
-                return (
-                  <div key={ability}>
-                    <span className="ability">
-                      {ability
-                        .split("-")
-                        .map(
-                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
-                        )
-                        .join(" ")}
-                    </span>
-                  </div>
-                );
-              }) ?? <div className="loader"></div>}
-            </>
+            <h5 className="pokemon-details">
+              Height
+              <br />
+              {selectedPokemon.height * 10} cm
+            </h5>
+            <h5 className="pokemon-details">
+              Weight
+              <br />
+              {selectedPokemon.weight / 10} kg
+            </h5>
+            <h5 className="pokemon-details">
+              Generation
+              <br />
+              {selectedPokemon?.generation?.slice(11).toUpperCase() ?? (
+                <div className="loader"></div>
+              )}
+            </h5>
           </div>
           <div>
             <>
@@ -129,9 +161,9 @@ const Modal = (props) => {
           <div>
             <h5>Weaknesses</h5>
             <div className="weak-resist">
-              {typesList[selectedPokemon?.types[0]].weaknesses
-                .concat(typesList[selectedPokemon?.types[1] ?? -1]?.weaknesses)
-                .filter(
+              {typesList[selectedPokemon?.types[0]]?.weaknesses
+                ?.concat(typesList[selectedPokemon?.types[1] ?? -1]?.weaknesses)
+                ?.filter(
                   (weakness) =>
                     !selectedPokemon.types
                       .concat(
@@ -142,11 +174,11 @@ const Modal = (props) => {
                       )
                       .includes(weakness)
                 )
-                .filter(
+                ?.filter(
                   (weakness, index, selfArray) =>
                     selfArray.indexOf(weakness) === index
                 )
-                .map(
+                ?.map(
                   (weakness) =>
                     weakness && (
                       <div className="types-list" key={weakness}>
@@ -154,6 +186,7 @@ const Modal = (props) => {
                           alt={weakness + " type"}
                           src={typesList[weakness].srcImage}
                           className={"type-" + weakness}
+                          type="image/svg+xml"
                         />
                         <span>
                           {weakness.charAt(0).toUpperCase() + weakness.slice(1)}
@@ -166,9 +199,11 @@ const Modal = (props) => {
           <div>
             <h5>Resistances</h5>
             <div className="weak-resist">
-              {typesList[selectedPokemon?.types[0]].resistances
-                .concat(typesList[selectedPokemon?.types[1] ?? -1]?.resistances)
-                .filter(
+              {typesList[selectedPokemon?.types[0]]?.resistances
+                ?.concat(
+                  typesList[selectedPokemon?.types[1] ?? -1]?.resistances
+                )
+                ?.filter(
                   (resistance) =>
                     !typesList[selectedPokemon.types[0]].weaknesses
                       .concat(
@@ -178,11 +213,11 @@ const Modal = (props) => {
                       )
                       .includes(resistance)
                 )
-                .filter(
+                ?.filter(
                   (resistance, index, selfArray) =>
                     selfArray.indexOf(resistance) === index
                 )
-                .map(
+                ?.map(
                   (resistance) =>
                     resistance && (
                       <div className="types-list" key={resistance}>
@@ -190,6 +225,7 @@ const Modal = (props) => {
                           alt={resistance + " type"}
                           src={typesList[resistance].srcImage}
                           className={"type-" + resistance}
+                          type="image/svg+xml"
                         />
                         <span>
                           {resistance.charAt(0).toUpperCase() +
@@ -204,12 +240,13 @@ const Modal = (props) => {
             <h5>Immunities</h5>
             <div className="weak-resist">
               {selectedPokemon?.types?.map((type) =>
-                typesList[type]?.immunities.map((immunity) => (
+                typesList[type]?.immunities?.map((immunity) => (
                   <div className="types-list" key={immunity}>
                     <img
                       alt={immunity + " type"}
                       src={typesList[immunity]?.srcImage}
                       className={"type-" + immunity}
+                      type="image/svg+xml"
                     />
                     <span>{immunity}</span>
                   </div>

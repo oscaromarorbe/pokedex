@@ -6,6 +6,11 @@ export const loadAbilitiesList = createAsyncThunk(
   fetchAPI
 );
 
+export const loadSingleAbility = createAsyncThunk(
+  "ability/loadSingleAbility",
+  fetchAPI
+);
+
 const initialState = {
   abilitiesList: {},
   abilitiesListLoading: false,
@@ -34,6 +39,23 @@ export const abilitiesSlice = createSlice({
           isLoading: false,
           failed: false,
         };
+      });
+    },
+    [loadSingleAbility.pending]: (state, action) => {
+      state.abilitiesList[action.meta.arg.id].loading = true;
+      state.abilitiesList[action.meta.arg.id].failed = false;
+    },
+    [loadSingleAbility.rejected]: (state, action) => {
+      state.abilitiesList[action.meta.arg.id].loading = false;
+      state.abilitiesList[action.meta.arg.id].failed = true;
+    },
+    [loadSingleAbility.fulfilled]: (state, action) => {
+      state.abilitiesList[action.meta.arg.id].loading = false;
+      state.abilitiesList[action.meta.arg.id].failed = false;
+      action.payload.effect_entries.forEach((entry) => {
+        if (entry.language.name === "en") {
+          state.abilitiesList[action.meta.arg.id].effect = entry.short_effect;
+        }
       });
     },
   },

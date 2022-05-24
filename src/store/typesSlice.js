@@ -41,8 +41,10 @@ export const typesSlice = createSlice({
       state.typesList[action.meta.arg.id].failed = false;
     },
     [loadSingleType.rejected]: (state, action) => {
-      state.typesList[action.meta.arg.id].loading = false;
-      state.typesList[action.meta.arg.id].failed = true;
+      if (state.typesList.hasOwnProperty(action.meta.arg.id)) {
+        state.typesList[action.meta.arg.id].loading = false;
+        state.typesList[action.meta.arg.id].failed = true;
+      }
     },
     [loadSingleType.fulfilled]: (state, action) => {
       state.typesList[action.meta.arg.id].loading = false;

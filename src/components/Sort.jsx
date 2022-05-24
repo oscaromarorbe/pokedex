@@ -15,15 +15,20 @@ const Sort = () => {
   const statsList = useSelector(selectStatsList);
   const statsSorted = useSelector(selectStatsSorted);
   const statsListLoading = useSelector(selectStatsListLoading);
-  useEffect(() => {
-    dispatch(
-      loadStatsList({
-        id: false,
-        endpoint: "stat",
-        params: { limit: 6, offset: 0 },
-      })
-    );
-  }, [dispatch]);
+  useEffect(
+    () => {
+      dispatch(
+        loadStatsList({
+          id: false,
+          endpoint: "stat",
+          params: { limit: 6, offset: 0 },
+        })
+      );
+    },
+    [
+      /* dispatch */
+    ]
+  );
   const handleClick = (name) => {
     dispatch(
       statsSorted[name] === "DSC"
